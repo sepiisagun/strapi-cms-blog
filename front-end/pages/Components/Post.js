@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/alt-text */
+/* eslint-disable react-hooks/rules-of-hooks */
 import {
     Avatar,
     Box,
@@ -15,7 +17,7 @@ import React from 'react'
 import { useQuery } from 'react-query';
 
 const fetchBlogPosts = async () => {
-    const res = await fetch ('http://localhost:1337/Articles')
+    const res = await fetch ('http://localhost:1338/Articles')
     return res.json()
 }
 
@@ -29,8 +31,8 @@ export default function Post() {
     return (
         <Wrap spacing="25px" p={4} shouldWrapChildren={false}>
             {data.map((post) => (
-                <WrapItem>
-                    <Box key={post.id}>
+                <WrapItem key={post.id}>
+                    <Box>
                         <Box
                             w={'350px'}
                             bg={useColorModeValue('white', 'gray.900')}
@@ -47,7 +49,7 @@ export default function Post() {
                             pos={'relative'}>
                                 <Image
                                     src={
-                                    `http://localhost:1337${post.image.url}`
+                                    `http://localhost:1338${post.image.url}`
                                     }
                                     layout={'fill'}
                                     objectFit=''
@@ -83,7 +85,7 @@ export default function Post() {
                             </Stack>
                             <Stack mt={6} direction={'row'} spacing={4} align={'center'}>
                                 <Avatar
-                                    src={`http://localhost:1337${post.author.picture.url}`}
+                                    src={`http://localhost:1338${post.author.picture.url}`}
                                     alt={post.author.name}
                                 />
                                 <Stack direction={'column'} spacing={0} fontSize={'sm'}>

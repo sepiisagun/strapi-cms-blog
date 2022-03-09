@@ -1,5 +1,5 @@
 export const getStaticProps = async () => {
-    const res = await fetch('http://localhost:1337/Articles')
+    const res = await fetch('http://localhost:1338/Articles')
     const data = await res.json()
 
     return {

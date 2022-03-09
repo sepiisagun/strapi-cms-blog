@@ -7,14 +7,18 @@ import {
     HStack,
     Image,
     Input,
+    Span,
     StackDivider,
     Text,
     Textarea,
     VStack,
 } from '@chakra-ui/react'
+import CreatableSelect from 'react-select/creatable'
+import { ActionMeta, OnChangeValue } from 'react-select';
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/router';
 import { useQuery, useMutation, useQueryClient } from 'react-query'
+import { colourOptions } from './data';
 import NavBar from '../Components/NavBar';
 import Footer from '../Components/Footer';
 
@@ -53,12 +57,30 @@ import Footer from '../Components/Footer';
 
 
 const fetchBlogPosts = async (key, e) => {
-    const res = await fetch ('http://localhost:1337/articles/' + e)
+    const res = await fetch ('http://localhost:1338/articles/' + e)
     return res.json()
 }
 
 const postProjectContent = async (payload) => {
-    const response = await fetch('http://localhost:1337/comments/', {
+    const response = await fetch('http://localhost:1338/comments/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload),
+    })
+
+    return response.json()
+}
+
+const fetchRelatedPosts = async (key, e) => {
+    const res = await fetch ('http://localhost:1338/related-posts')
+    return res.json()
+}
+
+const postTaggedContent = async (payload, key, e) => {
+    const response = await fetch('http://localhost:1338/related-posts', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -73,16 +95,37 @@ const postProjectContent = async (payload) => {
 export default function Article({ article }) {
     const [ comment, setComment ] = useState()
     const [ author, setAuthor ] = useState()
+    const [optionChange, setOptionChange] = useState([])
     const client = useQueryClient()
     const mutation = useMutation(postProjectContent)
+    const mutateTag = useMutation(postTaggedContent)
     const router = useRouter()
     const { slug } = router.query
+    const { test } = router.query
 
     const query = useQuery(['slug', slug], () => fetchBlogPosts('slug', slug), {
         enabled: !!slug,
       })
 
+    const relatedQuery = useQuery(['posts'], fetchRelatedPosts)
+    const { data: relatedPosts, refetch: fetchNewRelation } = relatedQuery
+
+    let options = relatedPosts;
+
     const { data, status } = query
+
+    const handleChange = (value) => {
+        console.log(value)
+        setOptionChange(value);
+    }
+    
+    const handleCreate = (value) => {
+        mutateTag.mutate({
+            value: value,
+            label: value,
+        })
+        fetchNewRelation;
+    }
 
     useEffect(() => {
         if (mutation.isSuccess) {
@@ -95,18 +138,33 @@ export default function Article({ article }) {
 
     const onSubmit = (e) => {
         e.preventDefault()
-        console.log(data?.id)
-        console.log(comment)
+        // console.log(data?.id)
+        // console.log(comment)
 
 
         mutation.mutate({
             article:{
                 id: data?.id,
             } ,
-            body: comment,
-            name: author,
+            value: comment,
+            label: author,
         })
     }
+
+    const onSubmit2 = (e) => {
+        console.log(e)
+        // console.log(data?.id)
+        // console.log(comment)
+
+            // mutateTag.mutate({
+            //     articles:{
+            //         id: data?.id,
+            //     } ,
+            //     value: entry.value,
+            //     label: entry.label,
+            // }, )
+    }
+
 
     return (
         <Box>
@@ -159,7 +217,7 @@ export default function Article({ article }) {
                     spacing='20px'>
                         <Text>Category: {data?.category.name}</Text>
                         <Box display='flex' alignItems='center'>
-                            <Image src={`http://localhost:1337${data?.image.url}`}></Image>
+                            <Image src={`http://localhost:1338${data?.image.url}`}></Image>
                         </Box>
                         <Box>
                             <Heading as='h1' size='lg'>{data?.title}</Heading>
@@ -169,6 +227,23 @@ export default function Article({ article }) {
                                 {data?.content}
                             </Container>
                         </Box>
+                        <form onSubmit={onSubmit2}>
+                            <CreatableSelect
+                                
+                                isMulti
+                                closeMenuOnSelect={false}
+                                getNewOptionData={(inputValue, optionLabel) => ({
+                                    label: optionLabel,
+                                    value: inputValue,
+                                    __isNew__: true,
+                                })}
+                                onChange={(e) => handleChange(e)}
+                                onCreateOption={(e) => handleCreate(e)}
+                                options={relatedPosts}
+                                value={optionChange}
+                            />
+                            <Button type='submit'>Post Relation</Button>
+                        </form>
                         <Box w='100%'>
                             <Heading as='h1' size='md'>Comments</Heading>
                             <VStack 
@@ -179,7 +254,7 @@ export default function Article({ article }) {
                             w='100%'>
                                 {data?.comments.length > 0 
                                 ? data?.comments.map((comment, index) => (
-                                    <HStack p={4}>
+                                    <HStack key={comment.id} p={4}>
                                         <Box><Heading>{index + 1}</Heading></Box>
                                         <Box>
                                             <VStack p={4} align='start'>
@@ -191,7 +266,7 @@ export default function Article({ article }) {
                                     ))
                                 : <Box>
                                     <Text color='gray.500'>
-                                        It's lonely here
+                                        Its lonely here
                                     </Text>
                                     </Box> }
                             </VStack>
