@@ -52,6 +52,10 @@
     "comments": {
       "via": "article",
       "collection": "comment"
+    },
+    "keywords": {
+      "via": "articles",
+      "collection": "related-post"
     }
   }
 }

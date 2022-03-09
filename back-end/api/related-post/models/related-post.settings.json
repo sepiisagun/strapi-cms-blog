@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "related_posts",
+  "info": {
+    "name": "Related Post",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "value": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    },
+    "articles": {
+      "collection": "article",
+      "via": "keywords",
+      "dominant": true
+    }
+  }
+}
